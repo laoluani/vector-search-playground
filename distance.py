@@ -4,9 +4,5 @@ import numpy as np
 A = np.array([1, 2, 3])
 B = np.array([4, 5, 6])
 
-def cos_similarity(a, b):
-    dot_product = np.dot(A, B)
-    magnitude_A = np.linalg.norm(A)
-    magnitude_B = np.linalg.norm(B)
-
-    return dot_product / (magnitude_A * magnitude_B)
+def cos_similarity(a: np.ndarray, b: np.ndarray):
+    return  np.dot(a, b) / (np.linalg.norm(a) *  np.linalg.norm(b))
