@@ -24,6 +24,7 @@
 
 ### ➕ Other
 - Multi query search
+- Expand supported distance metrics
 
 ## 🛠️ Getting Started
 
