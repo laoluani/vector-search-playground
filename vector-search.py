@@ -12,17 +12,19 @@ class Naive:
     def add(self, vector: np.ndarray):
         self.store.append(vector)
 
-    def search(self, query: np.ndarray, k: int = 1):
+    def search(self, query: np.ndarray, k: int = 1) -> list[tuple[float, np.ndarray]]:
         distances = []
         result = []
 
         for i, vec in enumerate(self.store):
             dist = cos_similarity(query, vec)
-            heapq.heappush(distances, (dist, i))
+            # make max heap by negating distance
+            heapq.heappush(distances, (-dist, i))
 
         for i in range(k):
-            best = heapq.heappop(distances)
-            result.append(best)
+            best_dist, best_index = heapq.heappop(distances)
+            # negate distance to return to orignal value
+            result.append((-best_dist, self.store[best_index]))
 
         return result
 
