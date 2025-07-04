@@ -1,7 +1,7 @@
 import heapq
 import numpy as np
 
-from distance import cos_similarity
+from utils.distance import cos_similarity
 
 class Naive:
     """A naive brute force vector search implementation using cosine similarity."""
