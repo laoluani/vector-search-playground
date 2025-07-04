@@ -19,6 +19,11 @@ class IVF:
 
     def add(self, vector: np.ndarray):
         """Add vector(s) to the store and assign index."""
+        if not self.is_trained:
+            raise RuntimeError("IVF must be trained before adding new vectors.")
+
+        if vector.shape[0] != self.dimension:
+            raise ValueError(f"Vector dimension mismatch. Expected {self.dimension}, got {vector.shape[0]}.")
         if vector.ndim!=1:
             for vec in vector:
                 distances = cos_similarity(self.centroids, vec)
