@@ -19,13 +19,22 @@ class IVF:
 
     def add(self, vector: np.ndarray):
         """Add vector(s) to the store and assign index."""
-        distances = cos_similarity(self.centroids, vector)
-        closest_centroid_id = np.argmin(distances)
+        if vector.ndim!=1:
+            for vec in vector:
+                distances = cos_similarity(self.centroids, vec)
+                closest_centroid_id = np.argmin(distances)
 
-        # Add the vector to the store and update the centroid_index
-        new_vector_index = len(self.store)
-        self.store.append(vector)
-        self.centroid_index[closest_centroid_id].append(new_vector_index)
+                new_vector_index = len(self.store)
+                self.store.append(vector)
+                self.centroid_index[closest_centroid_id].append(new_vector_index)
+        else:
+            distances = cos_similarity(self.centroids, vector)
+            closest_centroid_id = np.argmin(distances)
+
+            # Add the vector to the store and update the centroid_index
+            new_vector_index = len(self.store)
+            self.store.append(vector)
+            self.centroid_index[closest_centroid_id].append(new_vector_index)
 
     def search(self, query_vector: np.ndarray, k: int = 1):
         """Search for top k most similar vectors."""
