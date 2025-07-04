@@ -57,7 +57,7 @@ class IVF:
         for i, label in enumerate(kmeans.labels_):
             self.centroid_index[label].append(i)
         
-        self.store = self.store = vectors.tolist()
+        self.store = vectors.tolist()
         self.is_trained = True
 
 
