@@ -9,7 +9,7 @@ OUTPUT_DIR = ""
 if [ ! -f $FASTTEXT_FILENAME ]
 then
     curl $URL --output $FASTTEXT_FILENAME.zip
-    unzip -d $RAW_FASTTEXT.zip
+    unzip -d $FASTTEXT_FILENAME.zip
 fi
 
 mkdir $OUTPUT_DIR
