@@ -11,7 +11,8 @@
 ## 🧭 Roadmap
 
 ### 🧬 Algorithms
--  Naive brute-force search
+- Naive brute-force search
+- Inverted File Indexing (IVF)
 - Binary heap
 - KD-Tree
 - Product Quantization (PQ)
