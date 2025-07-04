@@ -3,6 +3,7 @@
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import normalize
 
 from utils.distance import cos_similarity
 
@@ -22,18 +23,20 @@ class IVF:
         if not self.is_trained:
             raise RuntimeError("IVF must be trained before adding new vectors.")
 
-        if vector.shape[0] != self.dimension:
+        if vector.shape[-1] != self.dimension:
             raise ValueError(f"Vector dimension mismatch. Expected {self.dimension}, got {vector.shape[0]}.")
         if vector.ndim!=1:
             for vec in vector:
-                distances = cos_similarity(self.centroids, vec)
+                norm_vec = normalize(vec.reshape(1, -1), axis=1)[0] # Have to reshape to normalise
+                distances = cos_similarity(self.centroids, norm_vec)
                 closest_centroid_id = np.argmin(distances)
 
                 new_vector_index = len(self.store)
                 self.store.append(vector)
                 self.centroid_index[closest_centroid_id].append(new_vector_index)
         else:
-            distances = cos_similarity(self.centroids, vector)
+            norm_vector = normalize(vector.reshape(1, -1), axis=1)[0] # Have to reshape to normalise
+            distances = cos_similarity(self.centroids, norm_vector)
             closest_centroid_id = np.argmin(distances)
 
             # Add the vector to the store and update the centroid_index
@@ -43,7 +46,8 @@ class IVF:
 
     def search(self, query_vector: np.ndarray, k: int = 1):
         """Search for top k most similar vectors."""
-        centroid_distances = cos_similarity(self.centroids, query_vector)
+        norm_query_vector = normalize(query_vector.reshape(1, -1), axis=1)[0]
+        centroid_distances = cos_similarity(self.centroids, norm_query_vector)
         closest_centroid = np.argmin(centroid_distances)
 
         vector_indices = self.centroid_index.get(closest_centroid)
@@ -60,12 +64,13 @@ class IVF:
 
     def train(self, vectors: np.ndarray, n_clusters: int = 10):
         """Cluster vectors with KMeans and determine centroid and centroid indices."""
-        if vectors.shape[1] != self.dimension:
+        if vectors.shape[-1] != self.dimension:
             raise ValueError(f"Training vectors dimension mismatch. Expected {self.dimension}, got {vectors.shape[1]}.")
 
+        norm_vectors = normalize(vectors, axis=1) # Normalise to ensure Euclidean distance is proportional to Cosine sim
         kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-        kmeans.fit(vectors)
-        self.centroids = kmeans.cluster_centers_
+        kmeans.fit(norm_vectors)
+        self.centroids = normalize(kmeans.cluster_centers_, axis=1) 
 
         self.centroid_index = {i: [] for i in range(n_clusters)}
         for i, label in enumerate(kmeans.labels_):
