@@ -41,7 +41,7 @@ class IVF:
         distances, indices = nn.kneighbors(query_vector.reshape(1, -1))
 
         # Map back to original indices in self.store
-        results = [(self.store[vector_indices[idx]], dist) for idx, dist in zip(indices[0], distances[0])]
+        results = [(dist, self.store[vector_indices[idx]]) for idx, dist in zip(indices[0], distances[0])]
         return results
 
     def train(self, vectors: np.ndarray, n_clusters: int = 10):
