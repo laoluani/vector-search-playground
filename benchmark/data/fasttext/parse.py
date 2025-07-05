@@ -23,7 +23,7 @@ def load_vectors(path: str, size: int) -> tuple[list[str], np.ndarray]:
 
 embeddings_file_name = "embeddings.npy"
 words_file_name = "words.txt"
-fasttext_vectors_path = ""
+fasttext_vectors_path = "fasttext.vec"
 size = 100
 
 words, vectors = load_vectors(fasttext_vectors_path, 100)
