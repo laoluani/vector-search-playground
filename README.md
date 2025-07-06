@@ -11,12 +11,11 @@
 ## 🧭 Roadmap
 
 ### 🧬 Algorithms
-- Naive brute-force search
+- Naive brute-force search (Binary heap)
 - Inverted File Indexing (IVF)
-- Binary heap
 - KD-Tree
 - Product Quantization (PQ)
-- HNSW (Hierarchical Navigable Small World)
+- Hierarchical Navigable Small World (HNSW)
 
 ### 📈 Performance
 - Scale benchmarking
