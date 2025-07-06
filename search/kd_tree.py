@@ -4,28 +4,46 @@ import numpy as np
 from collections import deque
 
 class KDNode:
-    def __init__(self, idx: int, dimensions: int, range: list[int], left: 'KDNode' | None = None, right: 'KDNode' | None = None):
+    def __init__(self, idx: int, dimension: int, range: list[int], left: 'KDNode' | None = None, right: 'KDNode' | None = None, parent: 'KDNode' | None = None):
         self.idx = idx  # look up index to find vector
-        self.dimensions = dimensions  # current dimension
+        self.dimension = dimension  # current dimension
         self.left = left  # left subtree
         self.right = right  # right subtree
         self.range = range
+        self.parent = parent
 
 
 class KDTree:
 
-    def __init__(self, vectors: np.ndarray):
+    def __init__(self, vectors: np.ndarray, dimensions):
         # TODO check dimensions
+        self.dimensions = dimensions
         self.store = vectors
         self.root = self._build_tree(vectors)
 
 
-    def search(self, query_vector):
-        print("search")
+    def search(self, query_vector: np.ndarray):
+        stack: list[KDNode] = []
+
+        stack.append(self.root)
+
+        node: KDNode | None = None
+
+        # traverse down
+        while stack:
+            node = stack.pop()
+            
+            if node.left and self.store[node.left.idx, node.dimensions] <= query_vector[node.dimension]:
+                stack.append(node.left)
+            
+            if node.right and self.store[node.left.idx, node.dimensions] < query_vector[node.dimension]:
+                stack.append(node.right)
+
+        # TODO backtrack and prune
 
         
     # TODO Node based approach adds extra memory overhead when creating object
-    # Look into array based approach
+    # Look into array based or heap approach
     def _build_tree(self, vectors: np.ndarray) -> KDNode:
 
         # sort vectors by current dimension
@@ -52,18 +70,17 @@ class KDTree:
 
             left_range = [start, node.idx]
             right_range = [node.idx, end]
+
             right_median_idx = sorted_indices[(right_range[0] + right_range[1]) / 2]
             left_median_idx = sorted_indices[(left_range[0] + left_range[1]) / 2]
 
-
             # add right node
-            right_child = KDNode(right_median_idx, next_dimension, right_range)
+            right_child = KDNode(right_median_idx, next_dimension, right_range, node)
             node.right = right_child
             stack.append(right_child)
 
-
             # add left node to stack
-            left_child = KDNode(left_median_idx, next_dimension, left_range)
+            left_child = KDNode(left_median_idx, next_dimension, left_range, node)
             node.left = left_child
             stack.append(left_child)
         
