@@ -1,16 +1,16 @@
-
-
 import numpy as np
-from collections import deque
+
+from utils.distance import cos_similarity
 
 class KDNode:
-    def __init__(self, idx: int, dimension: int, range: list[int], left: 'KDNode' | None = None, right: 'KDNode' | None = None, parent: 'KDNode' | None = None):
+    def __init__(self, idx: int, dimension: int, range: list[int], left: 'KDNode' | None = None, right: 'KDNode' | None = None, parent: 'KDNode' | None = None, is_left: bool):
         self.idx = idx  # look up index to find vector
         self.dimension = dimension  # current dimension
         self.left = left  # left subtree
         self.right = right  # right subtree
         self.range = range
         self.parent = parent
+        self.is_left = is_left
 
 
 class KDTree:
@@ -27,7 +27,7 @@ class KDTree:
 
         stack.append(self.root)
 
-        node: KDNode | None = None
+        best_node: KDNode | None = None
 
         # traverse down
         while stack:
@@ -39,7 +39,28 @@ class KDTree:
             if node.right and self.store[node.left.idx, node.dimensions] < query_vector[node.dimension]:
                 stack.append(node.right)
 
-        # TODO backtrack and prune
+            best_node = node
+
+        best_distance = cos_similarity(self.store[best_node.idx], query_vector)
+        
+        stack.append(best_node.parent)
+
+        while stack:
+            node = stack.pop()
+            distance = cos_similarity(self.store[best_node.idx], query_vector)
+            
+            if distance < best_distance:
+                best_node = node
+                best_distance = distance
+                # explore sibling node
+                n = node.right if node.is_left else node.left
+                if n:
+                    stack.append(n)
+            else:
+                if node.parent:
+                    stack.append(node.parent)
+
+        return best_node, best_distance
 
         
     # TODO Node based approach adds extra memory overhead when creating object
@@ -75,12 +96,12 @@ class KDTree:
             left_median_idx = sorted_indices[(left_range[0] + left_range[1]) / 2]
 
             # add right node
-            right_child = KDNode(right_median_idx, next_dimension, right_range, node)
+            right_child = KDNode(right_median_idx, next_dimension, right_range, node, False)
             node.right = right_child
             stack.append(right_child)
 
             # add left node to stack
-            left_child = KDNode(left_median_idx, next_dimension, left_range, node)
+            left_child = KDNode(left_median_idx, next_dimension, left_range, node, True)
             node.left = left_child
             stack.append(left_child)
         
