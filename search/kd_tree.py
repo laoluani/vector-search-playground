@@ -39,10 +39,10 @@ class KDTree:
         while stack:
             node = stack.pop()
             
-            if node.left and self.store[node.left.idx, node.dimensions] <= query_vector[node.dimension]:
+            if node.left and self.store[node.left.idx, node.dimension] <= query_vector[node.dimension]:
                 stack.append(node.left)
             
-            if node.right and self.store[node.left.idx, node.dimensions] < query_vector[node.dimension]:
+            if node.right and self.store[node.left.idx, node.dimension] < query_vector[node.dimension]:
                 stack.append(node.right)
 
             best_node = node
@@ -53,9 +53,9 @@ class KDTree:
 
         while stack:
             node = stack.pop()
-            distance = cos_similarity(self.store[best_node.idx], query_vector)
+            distance = cos_similarity(self.store[node.idx], query_vector)
             
-            if distance < best_distance:
+            if distance > best_distance:
                 best_node = node
                 best_distance = distance
                 # explore sibling node
