@@ -25,17 +25,28 @@ class ProductQuantisation:
         if vector.shape[-1] != self.dimension:
             raise ValueError(f"Vector dimension mismatch. Expected {self.dimension}, got {vector.shape[0]}.")
         
+        if vector.ndim!=1:
+            for vec in vector:
+                norm_vector = normalize(vector.reshape(1, -1), axis=1)[0]
+                subvector = norm_vector.reshape(ProductQuantisation.n_subvectors, -1)
+
+                pq_vector = []
+
+                for n, subvec in enumerate(subvector):
+                    pq_vector.append(int(np.argmin(cos_similarity(self.centroids[n], subvec))))
+
+                self.store.append(pq_vector)
+
+
         norm_vector = normalize(vector.reshape(1, -1), axis=1)[0]
-        subvector = norm_vector.reshape(1, ProductQuantisation.n_subvectors, -1).transpose(1, 0 , 2)
-        
+        subvector = norm_vector.reshape(ProductQuantisation.n_subvectors, -1)
 
-        distances = cos_similarity(self.centroids, norm_vector)
-        closest_centroid_id = np.argmin(distances)
+        pq_vector = []
 
-        # Add the vector to the store and update the centroid_index
-        new_vector_index = len(self.store)
-        self.store.append(vector)
-        self.centroid_index[closest_centroid_id].append(new_vector_index)
+        for n, subvec in enumerate(subvector):
+            pq_vector.append(int(np.argmin(cos_similarity(self.centroids[n], subvec))))
+
+        self.store.append(pq_vector)
 
     def train(self, vectors: np.ndarray):
         """Product quantise the vectors."""
@@ -57,7 +68,7 @@ class ProductQuantisation:
             self.centroids.append(normalize(kmeans.cluster_centers_, axis=1))
             pq_vectors[n] = kmeans.predict(norm_vec) # Predicts for each subvector which centroid it's closest to
 
-        self.store = pq_vectors.T.astype(np.uint8) # Transpose to be shape (len(vectors), num_subvectors)
+        self.store = pq_vectors.T.astype(np.uint8).tolist() # Transpose to be shape (len(vectors), num_subvectors)
         self.is_trained = True
 
     def search(self, query_vector: np.ndarray, k: int = 1):
