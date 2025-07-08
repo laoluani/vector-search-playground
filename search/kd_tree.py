@@ -29,7 +29,6 @@ class KDTree:
         stack: list[KDNode] = []
 
         stack.append(self.root)
-
         best_node: KDNode | None = None
 
         # traverse down
@@ -71,41 +70,53 @@ class KDTree:
     def _build_tree(self, vectors: np.ndarray) -> KDNode:
 
         # sort vectors by current dimension
-        sorted_indices = vectors[:, 0].argsort()
-        median_idx = vectors[(0 + len(vectors)) / 2]
-        root = KDNode(median_idx, 0, [0, len(self.store)])
-        stack: list[KDNode] = []
+        vector_idx = list(range(len(vectors)))
+        vector_idx.sort(key=lambda idx: vectors[idx][0])
+        start = 0 
+        end = len(vectors) - 1
+
+        median_idx = vector_idx[int(end / 2)]
+        root = KDNode(median_idx, 0, [0, end])
+        stack: list[KDNode] = [root]
+
 
         while stack:
             node = stack.pop()
-            next_dimension = (node.dimension + 1) % self.dimensions
 
-            # TODO Can we do this without creating a new array
-            # TODO Maybe should cache sorted vectors
-
-            # sort vectors by current dimension
-            sorted_indices = vectors[:, next_dimension].argsort()
-            
             start = node.range[0]
             end = node.range[1]
 
             if start == end:
                 continue
 
-            left_range = [start, node.idx]
-            right_range = [node.idx, end]
+            next_dimension = (node.dimension + 1) % self.dimensions
 
-            right_median_idx = sorted_indices[(right_range[0] + right_range[1]) / 2]
-            left_median_idx = sorted_indices[(left_range[0] + left_range[1]) / 2]
+            # TODO Can we do this without creating a new array
+            # TODO Maybe should cache sorted vectors
+
+             # sort vectors by current dimension
+            idx_slice = vector_idx[start:end + 1]
+            idx_slice.sort(key=lambda idx: vectors[idx][next_dimension])
+            vector_idx[start:end] = idx_slice
+            
+            # TODO This should be the median range
+            mid = int((start + end) / 2)
+            left_range = [start, mid]
+            right_range = [mid + 1, end]
+
+            right_median_idx = vector_idx[int((right_range[0] + right_range[1]) / 2)]
+            left_median_idx = vector_idx[int((left_range[0] + left_range[1]) / 2)]
 
             # add right node
             right_child = KDNode(right_median_idx, next_dimension, right_range, node, False)
             node.right = right_child
+            right_child.parent = node
             stack.append(right_child)
 
             # add left node to stack
             left_child = KDNode(left_median_idx, next_dimension, left_range, node, True)
             node.left = left_child
+            left_child.parent = node
             stack.append(left_child)
         
         return root
