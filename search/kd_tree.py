@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import numpy as np
 
+from collections import deque
 from dataclasses import dataclass
 from utils.distance import cos_similarity
+
 
 @dataclass
 class KDNode:
@@ -23,12 +25,14 @@ class KDTree:
         self.dimensions = dimensions
         self.store = vectors
         self.root = self._build_tree(vectors)
+        self.size = 0
 
 
     def search(self, query_vector: np.ndarray):
         stack: list[KDNode] = []
 
         stack.append(self.root)
+
         best_node: KDNode | None = None
 
         # traverse down
@@ -77,11 +81,13 @@ class KDTree:
 
         median_idx = vector_idx[int(end / 2)]
         root = KDNode(median_idx, 0, [0, end])
-        stack: list[KDNode] = [root]
+
+        queue = deque()
+        queue.append(root)
 
 
-        while stack:
-            node = stack.pop()
+        while queue:
+            node = queue.popleft()
 
             start = node.range[0]
             end = node.range[1]
@@ -108,16 +114,16 @@ class KDTree:
             left_median_idx = vector_idx[int((left_range[0] + left_range[1]) / 2)]
 
             # add right node
-            right_child = KDNode(right_median_idx, next_dimension, right_range, node, False)
+            right_child = KDNode(right_median_idx, next_dimension, right_range, None, None, node, False)
             node.right = right_child
             right_child.parent = node
-            stack.append(right_child)
+            queue.append(right_child)
 
             # add left node to stack
-            left_child = KDNode(left_median_idx, next_dimension, left_range, node, True)
+            left_child = KDNode(left_median_idx, next_dimension, left_range, None, None, node, True)
             node.left = left_child
             left_child.parent = node
-            stack.append(left_child)
+            queue.append(left_child)
         
         return root
     
