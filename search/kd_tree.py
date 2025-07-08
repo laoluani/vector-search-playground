@@ -1,16 +1,19 @@
+from __future__ import annotations
+
 import numpy as np
 
+from dataclasses import dataclass
 from utils.distance import cos_similarity
 
+@dataclass
 class KDNode:
-    def __init__(self, idx: int, dimension: int, range: list[int], left: 'KDNode' | None = None, right: 'KDNode' | None = None, parent: 'KDNode' | None = None, is_left: bool):
-        self.idx = idx  # look up index to find vector
-        self.dimension = dimension  # current dimension
-        self.left = left  # left subtree
-        self.right = right  # right subtree
-        self.range = range
-        self.parent = parent
-        self.is_left = is_left
+    idx: int
+    dimension: int
+    range: list[int]
+    left: KDNode | None = None
+    right: KDNode | None = None
+    parent: KDNode | None = None
+    is_left: bool = True
 
 
 class KDTree:
