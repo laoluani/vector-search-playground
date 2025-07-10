@@ -39,10 +39,10 @@ class KDTree:
         while stack:
             node = stack.pop()
             
-            if node.left and self.store[node.left.idx, node.dimension] <= query_vector[node.dimension]:
+            if node.left and query_vector[node.dimension] <= self.store[node.idx, node.dimension]:
                 stack.append(node.left)
             
-            if node.right and self.store[node.left.idx, node.dimension] < query_vector[node.dimension]:
+            if node.right and query_vector[node.dimension] > self.store[node.idx, node.dimension]:
                 stack.append(node.right)
 
             best_node = node
@@ -103,7 +103,7 @@ class KDTree:
              # sort vectors by current dimension
             idx_slice = vector_idx[start:end + 1]
             idx_slice.sort(key=lambda idx: vectors[idx][next_dimension])
-            vector_idx[start:end] = idx_slice
+            vector_idx[start:end + 1] = idx_slice
             
             # TODO This should be the median range
             mid = int((start + end) / 2)
@@ -113,17 +113,17 @@ class KDTree:
             right_median_idx = vector_idx[int((right_range[0] + right_range[1]) / 2)]
             left_median_idx = vector_idx[int((left_range[0] + left_range[1]) / 2)]
 
-            # add right node
-            right_child = KDNode(right_median_idx, next_dimension, right_range, None, None, node, False)
-            node.right = right_child
-            right_child.parent = node
-            queue.append(right_child)
-
             # add left node to stack
             left_child = KDNode(left_median_idx, next_dimension, left_range, None, None, node, True)
             node.left = left_child
             left_child.parent = node
             queue.append(left_child)
+
+            # add right node
+            right_child = KDNode(right_median_idx, next_dimension, right_range, None, None, node, False)
+            node.right = right_child
+            right_child.parent = node
+            queue.append(right_child)
         
         return root
     
